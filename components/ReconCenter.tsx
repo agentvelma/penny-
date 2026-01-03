@@ -5,6 +5,7 @@ import { getSecurityInsights } from '../services/geminiService';
 const ReconCenter: React.FC = () => {
   const [targetUrl, setTargetUrl] = useState('');
   const [targetIp, setTargetIp] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
   const [rawData, setRawData] = useState('');
   const [analysis, setAnalysis] = useState<string>('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -30,6 +31,9 @@ const ReconCenter: React.FC = () => {
       case 'IP':
         prompt = `Perform a deep footprinting on IP: ${inputData}. Check for open ports, vulnerabilities, and geographic attribution.`;
         break;
+      case 'GITHUB':
+        prompt = `Simulate a security audit for the GitHub repository: ${inputData}. Identify potential secrets leakage (API keys), vulnerable dependencies, and common coding flaws (OWASP Top 10) in this specific repo context.`;
+        break;
       case 'DATA':
         prompt = `Analyze this security data blob for patterns of exploitation or influence operations: ${inputData}`;
         break;
@@ -37,7 +41,7 @@ const ReconCenter: React.FC = () => {
         prompt = `Quick analysis for tool ${type}: ${inputData}`;
     }
 
-    const result = await getSecurityInsights(prompt, `Target: ${inputData}`);
+    const result = await getSecurityInsights(prompt, `Target: ${inputData} Type: ${type}`);
     setAnalysis(result);
     setIsAnalyzing(false);
   };
@@ -101,9 +105,29 @@ const ReconCenter: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              <div className="flex flex-col gap-2 md:col-span-2">
+                <label className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">GitHub Repository Scan</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={githubUrl}
+                    onChange={(e) => setGithubUrl(e.target.value)}
+                    placeholder="https://github.com/user/repo"
+                    className="flex-1 bg-black/80 border border-cyan-900 p-2 text-xs text-cyan-400 outline-none focus:border-cyan-500 transition-all placeholder:text-gray-800"
+                  />
+                  <button 
+                    onClick={() => runAnalysis('GITHUB', githubUrl)}
+                    disabled={!githubUrl || isAnalyzing}
+                    className="px-6 bg-cyan-950 border border-cyan-500 text-cyan-400 text-[10px] hover:bg-cyan-800 disabled:opacity-50 transition-colors uppercase font-bold flex items-center gap-2"
+                  >
+                    <i className="fab fa-github"></i> AUDIT_REPO
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 pt-2">
               <label className="text-[9px] text-gray-500 uppercase tracking-widest font-bold">Data Payload Analysis</label>
               <textarea 
                 value={rawData}
